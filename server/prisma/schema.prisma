@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+generator seed {
+  provider = "node"
+}
+model User {
+  id        String    @id @map("_id") @default(auto()) @db.ObjectId
+  name      String
+  avatarUrl String?
+  comments  Comment[]
+}
+
+model Comment {
+  id        String    @id @map("_id") @default(auto()) @db.ObjectId
+  text      String
+  createdAt DateTime  @default(now())
+  likes Int @default(0)
+
+  // Relation to User (author)
+  userId    String
+  author    User      @relation(fields: [userId], references: [id])
+
+  // Self-relation for threaded comments
+  parentId  String?   
+  parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id])
+  children  Comment[] @relation("CommentThread")
+}
