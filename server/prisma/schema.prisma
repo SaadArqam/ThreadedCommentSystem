@@ -35,6 +35,6 @@ model Comment {
 
   // Self-relation for threaded comments
   parentId  String?   
-  parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id])
+  parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children  Comment[] @relation("CommentThread")
 }
