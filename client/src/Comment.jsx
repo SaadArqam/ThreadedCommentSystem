@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import api from "./services/api";
 
 // Recursive comment component
 function Comment({ comment, onReplyPosted }) {
@@ -10,16 +11,9 @@ function Comment({ comment, onReplyPosted }) {
 
   const handleLike = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/comments/${comment.id}/like`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setLikes(data.likes);
-        setHasLiked(!hasLiked);
-      }
+      const data = await api.likeComment(comment.id);
+      setLikes(data.likes);
+      setHasLiked(!hasLiked);
     } catch (err) {
       console.error('Failed to like comment', err);
     }
@@ -75,11 +69,7 @@ function ReplyForm({ parentId, onReplyPosted }) {
     if (!text.trim()) return;
 
     try {
-      await fetch("http://localhost:3000/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, userId, parentId }),
-      });
+      await api.postComment(text, parentId);
       setText("");
       if (onReplyPosted) {
         onReplyPosted();
