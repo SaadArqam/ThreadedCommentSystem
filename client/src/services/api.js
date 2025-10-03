@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://threadedcommentsystem.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 class ApiService {
   async request(endpoint, options = {}) {
@@ -57,4 +57,3 @@ class ApiService {
 }
 
 export default new ApiService();
-
