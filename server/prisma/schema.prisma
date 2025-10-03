@@ -30,11 +30,11 @@ model Comment {
   likes Int @default(0)
 
   // Relation to User (author)
-  userId    String
+  userId    String    @db.ObjectId
   author    User      @relation(fields: [userId], references: [id])
 
   // Self-relation for threaded comments
-  parentId  String?   
+  parentId  String?   @db.ObjectId
   parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children  Comment[] @relation("CommentThread")
 }
