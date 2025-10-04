@@ -1,6 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import ApiService from '../services/api';
 import ReplyForm from './ReplyForm';
+
+const formatTimeAgo = (dateString) => {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 60) return 'just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`;
+  return `${Math.floor(diffInSeconds / 31536000)} years ago`;
+};
 
 const Comment = ({ comment, onCommentUpdate, level = 0 }) => {
   const [isReplying, setIsReplying] = useState(false);
@@ -8,7 +21,7 @@ const Comment = ({ comment, onCommentUpdate, level = 0 }) => {
   const [hasLiked, setHasLiked] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
 
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     if (isLiking) return;
     
     try {
@@ -21,14 +34,18 @@ const Comment = ({ comment, onCommentUpdate, level = 0 }) => {
     } finally {
       setIsLiking(false);
     }
-  };
+  }, [isLiking, comment.id, hasLiked]);
 
-  const handleReplyPosted = () => {
+  const handleReplyPosted = useCallback(() => {
     setIsReplying(false);
     if (onCommentUpdate) {
       onCommentUpdate();
     }
-  };
+  }, [onCommentUpdate]);
+
+  const handleReplyClick = useCallback(() => {
+    setIsReplying(true);
+  }, []);
 
   return (
     <div className={`relative ${level > 0 ? 'ml-8' : ''}`}>
@@ -52,6 +69,7 @@ const Comment = ({ comment, onCommentUpdate, level = 0 }) => {
             </div>
             <div className="flex items-center space-x-4 text-sm text-gray-500">
               <span>{comment.author?.name || 'Anonymous'}</span>
+              <span>{formatTimeAgo(comment.createdAt)}</span>
               <button 
                 onClick={handleLike}
                 disabled={isLiking}
@@ -61,7 +79,7 @@ const Comment = ({ comment, onCommentUpdate, level = 0 }) => {
                 <span>{likes}</span>
               </button>
               <button 
-                onClick={() => setIsReplying(true)}
+                onClick={handleReplyClick}
                 className="hover:text-gray-700"
               >
                 Reply
@@ -97,4 +115,4 @@ const Comment = ({ comment, onCommentUpdate, level = 0 }) => {
   );
 };
 
-export default Comment;
+export default memo(Comment);

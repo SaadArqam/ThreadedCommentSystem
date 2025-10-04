@@ -5,8 +5,20 @@ const DEFAULT_USER_ID = "6510c0a1b2f1c3d4e5f67890";
 const getComment = async (req, res) => {
   try {
     const allComments = await prisma.comment.findMany({
-      include: { author: true },
-      orderBy: { id: "asc" }
+      select: {
+        id: true,
+        text: true,
+        createdAt: true,
+        likes: true,
+        parentId: true,
+        author: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" }
     });
 
     const commentMap = {};
@@ -46,7 +58,19 @@ const postComment = async (req, res) => {
         parentId: parentId || null,
         userId: DEFAULT_USER_ID, 
       },
-      include: { author: true }, 
+      select: {
+        id: true,
+        text: true,
+        createdAt: true,
+        likes: true,
+        parentId: true,
+        author: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
     });
 
     return res.status(201).json(comment);
