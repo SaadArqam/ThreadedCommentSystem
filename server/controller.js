@@ -1,10 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// Single hardcoded user
 const DEFAULT_USER_ID = "6510c0a1b2f1c3d4e5f67890";
-
-// 🔹 Get all comments as a nested threaded structure
 const getComment = async (req, res) => {
   try {
     const allComments = await prisma.comment.findMany({

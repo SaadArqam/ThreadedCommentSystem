@@ -1,30 +1,17 @@
 import React, { useState } from 'react';
-import { useUser } from '../contexts/UserContext';
 import ApiService from '../services/api';
 
 const ReplyForm = ({ parentId, onReplyPosted, onCancel }) => {
   const [text, setText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  const { user } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!text.trim()) {
-      setError('Please enter a reply');
-      return;
-    }
-
-    if (!user) {
-      setError('You must be logged in to reply');
-      return;
-    }
+    if (!text.trim()) return;
 
     try {
       setIsSubmitting(true);
-      setError(null);
-      
       await ApiService.postComment(text.trim(), parentId);
       setText('');
       
@@ -32,59 +19,37 @@ const ReplyForm = ({ parentId, onReplyPosted, onCancel }) => {
         onReplyPosted();
       }
     } catch (err) {
-      setError(err.message || 'Failed to post reply');
+      console.error('Failed to post reply:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleCancel = () => {
-    setText('');
-    setError(null);
-    if (onCancel) {
-      onCancel();
-    }
-  };
-
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {error && (
-          <div className="text-red-500 text-sm bg-red-50 p-2 rounded border border-red-200">
-            {error}
-          </div>
-        )}
-        
-        <div>
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Write your reply..."
-            className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            rows={3}
-            disabled={isSubmitting}
-          />
-        </div>
-        
-        <div className="flex items-center justify-end space-x-2">
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || !text.trim()}
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Posting...' : 'Reply'}
-          </button>
-        </div>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit} className="flex items-center bg-gray-100 rounded-lg p-3 mb-4">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Write a reply..."
+        className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-500"
+        disabled={isSubmitting}
+      />
+      <button
+        type="button"
+        onClick={onCancel}
+        className="text-gray-500 hover:text-gray-700 mr-2"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        disabled={isSubmitting || !text.trim()}
+        className="text-gray-500 hover:text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isSubmitting ? 'Posting...' : 'Reply'}
+      </button>
+    </form>
   );
 };
 
